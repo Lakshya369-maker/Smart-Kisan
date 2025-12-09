@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import urllib.parse
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -67,11 +67,16 @@ init_db()
 # ML MODEL LOADING
 # ======================================
 
-MODEL_PATH = os.path.join(BASE_DIR, "crop_model.h5")
 SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
 ENCODER_PATH = os.path.join(BASE_DIR, "label_encoder.pkl")
 
-model = load_model(MODEL_PATH, compile=False)
+TFLITE_PATH = os.path.join(BASE_DIR, "crop_model.tflite")
+interpreter = tf.lite.Interpreter(model_path=TFLITE_PATH)
+
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 with open(SCALER_PATH, "rb") as f:
     scaler = pickle.load(f)
@@ -593,7 +598,13 @@ def predict_crop():
             print("🚀 MODEL PREDICTION STARTING NOW (predict)...")
 
             # ✅ Light-weight, uses less RAM than manual eager call
-            probabilities = model.predict(features_scaled, verbose=0)[0]
+            input_data = np.array(features_scaled, dtype=np.float32)
+
+            interpreter.set_tensor(input_details[0]['index'], input_data)
+            interpreter.invoke()
+            probabilities = interpreter.get_tensor(output_details[0]['index'])[0]
+
+
 
             print("✅ MODEL PREDICTION COMPLETED")
 
