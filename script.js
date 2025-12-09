@@ -25,8 +25,7 @@ const signupForm = document.getElementById("signupForm");
 const signinForm = document.getElementById("signinForm");
 const otpForm = document.getElementById("otpForm");
 
-const BACKEND_URL = "http://localhost:5000";
-
+const BACKEND_URL = "https://smart-kisan-jznw.onrender.com";
 
 // ===============================
 // OTP MODAL SYSTEM
