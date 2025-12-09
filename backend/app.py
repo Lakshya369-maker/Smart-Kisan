@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import urllib.parse
-import tensorflow as tf
+from tensorflow.keras.models import load_model
 
 load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
