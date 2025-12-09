@@ -16,6 +16,7 @@ import pickle
 from tensorflow.keras.models import load_model
 from sklearn.metrics import accuracy_score
 import urllib.parse
+import tensorflow as tf
 
 load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -616,12 +617,29 @@ def predict_crop():
         print(features_df)
 
         features_scaled = scaler.transform(features_df)
+
         print("✅ FEATURES SCALED")
 
-        # ✅ MODEL EXECUTION LOG
-        print("🚀 MODEL PREDICTION STARTING NOW...")
-        probabilities = model.predict(features_scaled)[0]
-        print("✅ MODEL PREDICTION COMPLETED")
+        try:
+            print("🚀 MODEL PREDICTION STARTING NOW (eager mode)...")
+
+            # Convert to TensorFlow tensor explicitly
+            features_tensor = tf.convert_to_tensor(features_scaled, dtype=tf.float32)
+
+            # Call the model directly (eager mode)
+            pred_tensor = model(features_tensor, training=False)
+
+            # Convert to numpy
+            probabilities = pred_tensor.numpy()[0]
+
+            print("✅ MODEL PREDICTION COMPLETED")
+        except Exception as e:
+            print("❌ MODEL PREDICTION FAILED:", str(e))
+            return jsonify({
+                "status": "error",
+                "message": "Model inference failed: " + str(e)
+            }), 500
+
         print("✅ MODEL RAW OUTPUT:", probabilities)
 
         sorted_idx = probabilities.argsort()[::-1]
@@ -703,7 +721,6 @@ def predict_crop():
 # MAIN: DISABLE AUTO-RELOAD
 # ======================================
 if __name__ == "__main__":
-    check_model_accuracy()
     generate_daily_prices()
 
     port = int(os.environ.get("PORT", 5000))
