@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 import numpy as np
 import pandas as pd
 import pickle
-from tensorflow.keras.models import load_model
 import urllib.parse
 import tensorflow as tf
 
@@ -591,18 +590,13 @@ def predict_crop():
         print("✅ FEATURES SCALED")
 
         try:
-            print("🚀 MODEL PREDICTION STARTING NOW (eager mode)...")
+            print("🚀 MODEL PREDICTION STARTING NOW (predict)...")
 
-            # Convert to TensorFlow tensor explicitly
-            features_tensor = tf.convert_to_tensor(features_scaled, dtype=tf.float32)
-
-            # Call the model directly (eager mode)
-            pred_tensor = model(features_tensor, training=False)
-
-            # Convert to numpy
-            probabilities = pred_tensor.numpy()[0]
+            # ✅ Light-weight, uses less RAM than manual eager call
+            probabilities = model.predict(features_scaled, verbose=0)[0]
 
             print("✅ MODEL PREDICTION COMPLETED")
+
         except Exception as e:
             print("❌ MODEL PREDICTION FAILED:", str(e))
             return jsonify({
