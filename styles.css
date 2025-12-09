@@ -1610,3 +1610,37 @@ body.modal-lock #signinModal {
   background: #2e7d32;
   border-radius: 6px;
 }
+
+/* ===============================
+   RENDER SERVER POPUP FIXED
+=============================== */
+#renderPopup {
+  position: fixed;
+  top: 40px;              /* ✅ Slightly downward from top */
+  right: -420px;         /* ✅ Start hidden outside screen */
+  width: 340px;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 99999;
+  transition: right 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+/* ✅ WHEN ACTIVE */
+#renderPopup.show {
+  right: 20px;           /* ✅ Slides in from RIGHT */
+  opacity: 1;
+  pointer-events: auto;
+}
+#customPopup {
+  z-index: 9999;     /* normal popups */
+}
+
+#renderPopup {
+  z-index: 99999;   /* ✅ always ABOVE everything */
+}

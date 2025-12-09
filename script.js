@@ -25,6 +25,9 @@ const signupForm = document.getElementById("signupForm");
 const signinForm = document.getElementById("signinForm");
 const otpForm = document.getElementById("otpForm");
 
+const BACKEND_URL = "http://localhost:5000";
+
+
 // ===============================
 // OTP MODAL SYSTEM
 // ===============================
@@ -34,6 +37,14 @@ function unlockBody() {
 }
 
 function showPopup(message, type = "success") {
+
+  // ✅ BLOCK normal popups when Render popup is active
+  const renderPopup = document.getElementById("renderPopup");
+  if (renderPopup && renderPopup.classList.contains("show")) {
+    console.warn("⛔ Normal popup blocked because Render popup is active");
+    return;
+  }
+
   const popup = document.getElementById("customPopup");
   const msg = document.getElementById("popupMessage");
 
@@ -55,6 +66,71 @@ function showPopup(message, type = "success") {
   setTimeout(() => {
     popup.classList.remove("show");
   }, 2500);
+}
+
+// ===============================
+// ✅ TRUE NON-STOP RENDER WAKE TIMER (INFINITE LOOP)
+// ===============================
+
+let renderTotalSeconds = 60;
+let renderRemainingSeconds = 60;
+let renderPopupVisible = false;
+
+// ✅ START TIMER ONCE WHEN PAGE LOADS
+(function startRenderInfiniteTimer() {
+  setInterval(() => {
+    renderRemainingSeconds--;
+
+    // ✅ AUTO RESET AT 0 → 60 AGAIN (NEVER STOPS)
+    if (renderRemainingSeconds <= 0) {
+      renderRemainingSeconds = renderTotalSeconds;
+    }
+
+  }, 1000);
+})();
+
+// ✅ SHOW POPUP (DOES NOT TOUCH TIMER)
+let renderAutoCloseTimer = null;
+
+function showRenderWakeupCountdown() {
+  const popup = document.getElementById("renderPopup");
+  const msg = document.getElementById("renderPopupMessage");
+  if (!popup || !msg) return;
+
+  if (renderPopupVisible) return; // ✅ Prevent spam
+
+  renderPopupVisible = true;
+  popup.classList.add("show");
+
+  msg.textContent = `⚠️ Our AI server is waking up... Please wait ${renderRemainingSeconds}s`;
+
+  // ✅ AUTO CLOSE AFTER 3 SECONDS (LIKE NORMAL POPUPS)
+  clearTimeout(renderAutoCloseTimer);
+  renderAutoCloseTimer = setTimeout(() => {
+    stopRenderWakeupCountdown();
+  }, 3000);
+}
+
+
+// ✅ LIVE TEXT UPDATE (EVERY 300ms)
+setInterval(() => {
+  if (!renderPopupVisible) return;
+
+  const msg = document.getElementById("renderPopupMessage");
+  if (!msg) return;
+
+  msg.textContent = `⚠️ Our AI server is waking up... Please wait ${renderRemainingSeconds}s`;
+}, 300);
+
+// ✅ HIDE POPUP (TIMER CONTINUES)
+function stopRenderWakeupCountdown() {
+  const popup = document.getElementById("renderPopup");
+  if (!popup) return;
+
+  renderPopupVisible = false;
+  popup.classList.remove("show");
+
+  clearTimeout(renderAutoCloseTimer);
 }
 
 function openOtpModal() {
@@ -110,13 +186,16 @@ if (signupForm) {
     }
 
     // Send to backend first (BEFORE opening OTP modal)
-    const res = await fetch("http://localhost:5000/auth/send-otp", {
+    showRenderWakeupCountdown();
+
+    const res = await fetch(BACKEND_URL + "/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
     });
 
     const data = await res.json();
+    stopRenderWakeupCountdown();
 
     // EMAIL EXISTS → redirect to login
     if (data.status === "exists") {
@@ -209,13 +288,15 @@ if (otpForm) {
     const { name, email, password } = window.signupInfo;
 
     try {
-      const res = await fetch("http://localhost:5000/auth/verify", {
+      showRenderWakeupCountdown();
+      const res = await fetch(BACKEND_URL + "/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, otp })
       });
 
       const data = await res.json();
+      stopRenderWakeupCountdown();
 
       if (data.status === "registered") {
         localStorage.setItem("AUTH_USER", JSON.stringify({ name, email }));
@@ -297,7 +378,8 @@ if (resendBtn) {
     timerText.textContent = "Sending...";
 
     try {
-      const res = await fetch("http://localhost:5000/auth/send-otp", {
+      showRenderWakeupCountdown();
+      const res = await fetch(BACKEND_URL + "/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: window.signupInfo.email })
@@ -306,11 +388,14 @@ if (resendBtn) {
       if (res.ok) {
         timerText.textContent = "OTP sent! Check your email.";
         startOtpTimer();
+        stopRenderWakeupCountdown();
       } else {
         timerText.textContent = "Failed to send. Try again.";
         resendBtn.style.display = "inline-block";
+        stopRenderWakeupCountdown();
       }
     } catch (error) {
+      stopRenderWakeupCountdown();   // ✅ IMPORTANT FIX
       console.error("Resend error:", error);
       timerText.textContent = "Network error. Try again.";
       resendBtn.style.display = "inline-block";
@@ -1020,13 +1105,15 @@ if (signinForm) {
 
     // Proceed with backend login only after validation
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {
+      showRenderWakeupCountdown();
+      const res = await fetch(BACKEND_URL + "/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
       const data = await res.json();
+      stopRenderWakeupCountdown();
 
       if (data.status === "ok") {
         localStorage.setItem("AUTH_USER", JSON.stringify(data.user));
@@ -1667,12 +1754,14 @@ if (!allowed.includes(sowingMonth)) {
   return;
 }
 
-fetch("http://localhost:5000/predict-crop", {
+showRenderWakeupCountdown();
+fetch(BACKEND_URL + "/predict-crop", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)
 })
 .then(async res => {
+  stopRenderWakeupCountdown();
   const data = await res.json();
 
   console.log("✅ RAW RESPONSE FROM SERVER:", data);
@@ -1696,6 +1785,7 @@ fetch("http://localhost:5000/predict-crop", {
   }
 })
 .catch(err => {
+  stopRenderWakeupCountdown();
   console.error("❌ FETCH FAILED:", err);
   hidePlantLoader();
   showPopup("❌ Server not responding", "error");

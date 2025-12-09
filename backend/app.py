@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 CORS(app)
 
-DB_FILE = "database.db"
+DB_FILE = os.path.join(BASE_DIR, "database.db")
 
 # ======================================
 # EMAIL VALIDATION
@@ -119,33 +119,45 @@ def db():
 # EMAIL SENDER (BREVO SMTP or TEST MODE)
 # ======================================
 def send_email(receiver, otp):
-    """
-    Send OTP via email
-    For testing: just logs it
-    For production: use real SMTP
-    """
-    # TEST MODE: Just print instead of sending
-    print(f"🧪 TEST MODE: OTP for {receiver} is: {otp}")
-    
-    # PRODUCTION: Uncomment below and configure SMTP
-    """
-    smtp_server = os.getenv("SMTP_SERVER")
-    smtp_port = int(os.getenv("SMTP_PORT"))
-    smtp_login = os.getenv("SMTP_LOGIN")
-    smtp_pass = os.getenv("SMTP_PASSWORD")
-    sender = os.getenv("SMTP_SENDER")
+    brevo_key = os.getenv("BREVO_API_KEY")
 
-    msg = MIMEText(f"Your Smart Kisan verification code is: {otp}")
-    msg["Subject"] = "Smart Kisan Email Verification"
-    msg["From"] = sender
-    msg["To"] = receiver
+    if not brevo_key:
+        raise Exception("BREVO_API_KEY missing in environment")
 
-    server = smtplib.SMTP(smtp_server, smtp_port)
-    server.starttls()
-    server.login(smtp_login, smtp_pass)
-    server.sendmail(sender, receiver, msg.as_string())
-    server.quit()
-    """
+    headers = {
+        "accept": "application/json",
+        "api-key": brevo_key,
+        "content-type": "application/json"
+    }
+
+    email_data = {
+        "sender": {
+            "name": "Smart Kisan",
+            "email": "projects.planeta@gmail.com"   # must be verified in Brevo
+        },
+        "to": [
+            {"email": receiver}
+        ],
+        "subject": "Your Smart Kisan OTP",
+        "htmlContent": f"""
+            <h2>Your OTP is: <b>{otp}</b></h2>
+            <p>This code expires in 10 minutes.</p>
+        """
+    }
+
+    resp = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers=headers,
+        json=email_data,
+        timeout=15
+    )
+
+    print(f"✅ Brevo Status: {resp.status_code}")
+    print(f"✅ Brevo Response: {resp.text}")
+
+    if resp.status_code not in (200, 201, 202):
+        raise Exception("Brevo API failed: " + resp.text)
+
 
 # ======================================
 # SEND OTP
@@ -674,10 +686,6 @@ def predict_crop():
 if __name__ == "__main__":
     check_model_accuracy()
     generate_daily_prices()
-    # CRITICAL: use_reloader=False prevents page reloads on file changes
-    app.run(
-        debug=True,
-        use_reloader=False,  # ← DISABLE AUTO-RELOAD
-        use_debugger=True,
-        threaded=True
-    )
+
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
