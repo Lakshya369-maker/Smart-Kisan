@@ -29,30 +29,25 @@ const BACKEND_URL = "https://smart-kisan-jznw.onrender.com";
 
 
 
-async function fetchWithRenderWake(url, options = {}, delayMs = 1500) {
+async function fetchWithRenderWake(url, options = {}, delayMs = 8000) {
   let wakeTimer;
   let popupShown = false;
 
   try {
-    const wakePromise = new Promise(resolve => {
-      wakeTimer = setTimeout(() => {
-        showRenderWakeupCountdown();   // ✅ SHOW POPUP
-        popupShown = true;
-        resolve();
-      }, delayMs);
-    });
+    wakeTimer = setTimeout(() => {
+      showRenderWakeupCountdown();   // ✅ Only after 8 seconds
+      popupShown = true;
+    }, delayMs);
 
-    const fetchPromise = fetch(url, options);
-
-    const res = await Promise.race([
-      fetchPromise,
-      wakePromise.then(() => fetchPromise)
-    ]);
-
+    const res = await fetch(url, options);
     return res;
+
   } finally {
     clearTimeout(wakeTimer);
-    if (popupShown) stopRenderWakeupCountdown(); // ✅ AUTO HIDE
+
+    if (popupShown) {
+      stopRenderWakeupCountdown();  // ✅ Auto close when response arrives
+    }
   }
 }
 

@@ -548,59 +548,81 @@ def is_valid_sowing_month(user_month):
 
 @app.route("/predict-crop", methods=["POST"])
 def predict_crop():
-    generate_daily_prices()   # ✅ FORCE live price update per request
+    print("\n==============================")
+    print("🚀 NEW PREDICTION REQUEST RECEIVED")
+    print("==============================")
+
+    generate_daily_prices()
+
     data = request.get_json(force=True)
-    print("✅ Incoming request data:", data)
+    print("✅ RAW INPUT FROM FRONTEND:", data)
 
     try:
-        # ✅ Soil + Land Inputs
+        # ✅ INPUT EXTRACTION LOG
         N = float(data["N"])
         P = float(data["P"])
         K = float(data["K"])
         ph = float(data["ph"])
-        land_size = float(data.get("land_size", 1))  # ✅ acres (default 1)
+        land_size = float(data.get("land_size", 1))
 
-
-        # ✅ User location + month
         state = data["state"].strip()
         district = data["district"].strip()
         sowing_month = data["sowing_month"].strip().lower()
 
-        # ✅ Validate sowing month (next 3 months only)
+        print("✅ PARSED INPUTS:")
+        print("N, P, K, pH:", N, P, K, ph)
+        print("Land Size:", land_size)
+        print("State:", state)
+        print("District:", district)
+        print("Sowing Month:", sowing_month)
+
+        # ✅ MONTH VALIDATION LOG
         is_allowed, allowed_months = is_valid_sowing_month(sowing_month)
+        print("✅ Allowed Months:", allowed_months)
+
         if not is_allowed:
+            print("❌ INVALID SOWING MONTH")
             return jsonify({
                 "status": "error",
                 "message": "Sowing month is too far for accurate 90-day prediction.",
                 "allowed_months": allowed_months
             }), 400
 
-        # ✅ Detect season from month → "kharif" / "rabi" / "zaid"
         season_detected = get_season_from_month(sowing_month)
+        print("✅ SEASON DETECTED:", season_detected)
 
-        # ✅ Convert district → lat/lon
+        # ✅ GEO LOCATION LOG
         lat, lon = get_lat_lon_from_district(district, state)
+        print("✅ GEO LOCATION:", lat, lon)
+
         if lat is None or lon is None:
+            print("❌ LOCATION FAILED")
             return jsonify({
                 "status": "error",
                 "message": "Invalid district/state"
             }), 400
 
-        # ✅ Fetch 90-day seasonal weather
+        # ✅ WEATHER LOG
         temperature, humidity, rainfall = get_seasonal_weather(lat, lon)
+        print("✅ WEATHER USED:", temperature, humidity, rainfall)
 
-        # ✅ Prepare features as in training
-        feature_names = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+        # ✅ FEATURE PREP LOG
         features_df = pd.DataFrame(
             [[N, P, K, temperature, humidity, ph, rainfall]],
-            columns=feature_names
+            columns=["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
         )
 
-        features_scaled = scaler.transform(features_df)
+        print("✅ MODEL INPUT FEATURES:")
+        print(features_df)
 
-        # ✅ Predict probabilities
+        features_scaled = scaler.transform(features_df)
+        print("✅ FEATURES SCALED")
+
+        # ✅ MODEL EXECUTION LOG
         probabilities = model.predict(features_scaled)[0]
-        sorted_idx = probabilities.argsort()[::-1]   # full sorted list
+        print("✅ MODEL RAW OUTPUT:", probabilities)
+
+        sorted_idx = probabilities.argsort()[::-1]
 
         seasonal = []
         non_seasonal = []
@@ -613,13 +635,10 @@ def predict_crop():
 
             crop_key = crop_name.lower()
 
-            # ✅ Get live price & yield
             price = DAILY_CROP_PRICES.get(crop_key, 2500)
             yield_per_acre = CROP_YIELD_PER_ACRE.get(crop_key, 20)
 
-            # ✅ Total yield & profit
             total_yield = yield_per_acre * land_size
-
             total_revenue = int(total_yield * price)
 
             cost_per_acre = CROP_COST_PER_ACRE.get(crop_key, 18000)
@@ -627,19 +646,17 @@ def predict_crop():
 
             net_profit = total_revenue - total_cost
 
+            print(f"✅ PREDICTED → {crop_name} | ₹{net_profit}")
+
             entry = {
                 "crop": crop_name,
                 "confidence": round(prob, 2),
                 "season_match": is_season,
-
                 "price_per_quintal": price,
                 "yield_per_acre": yield_per_acre,
-
                 "total_revenue": total_revenue,
                 "total_cost": total_cost,
                 "net_profit": net_profit,
-
-                # ✅ Backward compatibility for frontend
                 "total_profit": net_profit
             }
 
@@ -648,36 +665,36 @@ def predict_crop():
             else:
                 non_seasonal.append(entry)
 
-        # ✅ FINAL TOP 3 RULE:
         final_results = seasonal[:3]
-
         if len(final_results) < 3:
-            needed = 3 - len(final_results)
-            final_results.extend(non_seasonal[:needed])
+            final_results.extend(non_seasonal[:3 - len(final_results)])
 
+        print("✅ FINAL TOP 3 RESULTS SENT TO FRONTEND:")
+        for item in final_results:
+            print(item)
+
+        print("✅ ✅ ✅ RESPONSE SUCCESSFULLY SENT\n")
 
         return jsonify({
             "status": "success",
             "location_used": f"{district}, {state}",
             "sowing_month": sowing_month,
             "season_detected": season_detected.upper(),
-
             "weather_used": {
                 "temperature": float(temperature),
                 "humidity": float(humidity),
                 "rainfall": float(rainfall)
             },
-
             "top_3": final_results
         })
 
-
     except Exception as e:
-        print("Prediction Error:", str(e))
+        print("❌ PREDICTION CRASHED:", str(e))
         return jsonify({
             "status": "error",
             "message": str(e)
         }), 500
+
 
 
 # ======================================
