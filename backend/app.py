@@ -619,7 +619,9 @@ def predict_crop():
         print("✅ FEATURES SCALED")
 
         # ✅ MODEL EXECUTION LOG
+        print("🚀 MODEL PREDICTION STARTING NOW...")
         probabilities = model.predict(features_scaled)[0]
+        print("✅ MODEL PREDICTION COMPLETED")
         print("✅ MODEL RAW OUTPUT:", probabilities)
 
         sorted_idx = probabilities.argsort()[::-1]
