@@ -1695,3 +1695,58 @@ body.no-scroll {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
 }
+.trend-svg {
+  width: 28px;
+  height: 18px;
+  overflow: visible;
+}
+
+/* ===== UP TREND ANIMATION ===== */
+.trend-svg.up polyline {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: drawUp 1.2s ease-out forwards;
+}
+
+.trend-svg.up circle {
+  animation: pulseUp 1.2s infinite alternate;
+}
+
+@keyframes drawUp {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pulseUp {
+  from { r: 3; opacity: 0.6; }
+  to   { r: 5; opacity: 1; }
+}
+
+/* ===== DOWN TREND ANIMATION ===== */
+.trend-svg.down polyline {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: drawDown 1.2s ease-out forwards;
+}
+
+.trend-svg.down circle {
+  animation: pulseDown 1.2s infinite alternate;
+}
+
+@keyframes drawDown {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pulseDown {
+  from { r: 3; opacity: 0.6; }
+  to   { r: 5; opacity: 1; }
+}
+
+/* ===== STABLE TREND PULSE ===== */
+.trend-svg.stable polyline {
+  animation: stableBlink 1.5s infinite alternate;
+}
+
+@keyframes stableBlink {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}

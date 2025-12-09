@@ -1036,26 +1036,49 @@ function generateMockPrices(key) {
 function getTrendLine(type) {
   if (type === "up") {
     return `
-      <svg class="trend-svg up" viewBox="0 0 40 20">
-        <path d="M2 16 Q20 2 38 4"/>
+      <svg class="trend-svg up" viewBox="0 0 50 30">
+        <polyline 
+          points="5,25 18,18 30,20 45,5"
+          fill="none"
+          stroke="green"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <circle cx="45" cy="5" r="3" fill="green"/>
       </svg>
     `;
   }
+
   if (type === "down") {
     return `
-      <svg class="trend-svg down" viewBox="0 0 40 20">
-        <path d="M2 4 Q20 18 38 16"/>
+      <svg class="trend-svg down" viewBox="0 0 50 30">
+        <polyline 
+          points="5,5 18,12 30,10 45,25"
+          fill="none"
+          stroke="red"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <circle cx="45" cy="25" r="3" fill="red"/>
       </svg>
     `;
   }
+
   return `
-    <svg class="trend-svg stable" viewBox="0 0 40 20">
-      <path d="M2 10 Q20 10 38 10"/>
+    <svg class="trend-svg stable" viewBox="0 0 50 30">
+      <polyline 
+        points="5,15 18,15 30,15 45,15"
+        fill="none"
+        stroke="orange"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
     </svg>
   `;
 }
-
-
 
 window.addEventListener("load", () => {
   const carousel = document.getElementById("cropCarousel");
