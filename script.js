@@ -1786,6 +1786,7 @@ if (!allowed.includes(sowingMonth)) {
   return;
 }
 
+console.log("🚀 Sending payload to backend:", payload);
 fetchWithRenderWake(BACKEND_URL + "/predict-crop", {
   method: "POST",
   headers: { "Content-Type": "application/json" },

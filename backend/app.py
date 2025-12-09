@@ -1,10 +1,11 @@
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import random
-import smtplib
 import sqlite3
 import re
 from datetime import datetime, timedelta
-from email.mime.text import MIMEText
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -14,7 +15,6 @@ import numpy as np
 import pandas as pd
 import pickle
 from tensorflow.keras.models import load_model
-from sklearn.metrics import accuracy_score
 import urllib.parse
 import tensorflow as tf
 
@@ -22,7 +22,7 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 DB_FILE = os.path.join(BASE_DIR, "database.db")
 
@@ -72,43 +72,13 @@ MODEL_PATH = os.path.join(BASE_DIR, "crop_model.h5")
 SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
 ENCODER_PATH = os.path.join(BASE_DIR, "label_encoder.pkl")
 
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH, compile=False)
 
 with open(SCALER_PATH, "rb") as f:
     scaler = pickle.load(f)
 
 with open(ENCODER_PATH, "rb") as f:
     label_encoder = pickle.load(f)
-
-# ======================================
-# MODEL ACCURACY CHECK ON SERVER START
-# ======================================
-
-def check_model_accuracy():
-    try:
-        df = pd.read_csv(os.path.join(BASE_DIR, "Crop_recommendation.csv"))
-
-        X = df.drop("label", axis=1)
-        y = df["label"]
-
-        # ✅ Scale features
-        X_scaled = scaler.transform(X)
-
-        # ✅ Predict
-        y_pred_prob = model.predict(X_scaled)
-        y_pred = np.argmax(y_pred_prob, axis=1)
-
-        # ✅ Decode labels
-        y_true = label_encoder.transform(y)
-
-        accuracy = accuracy_score(y_true, y_pred) * 100
-
-        print("✅✅ MODEL LOADED SUCCESSFULLY")
-        print(f"🎯 MODEL ACCURACY: {accuracy:.2f}%")
-
-    except Exception as e:
-        print("⚠️ Could not calculate model accuracy")
-        print("Reason:", str(e))
 
 # ======================================
 # DB CONNECTION
@@ -724,4 +694,4 @@ if __name__ == "__main__":
     generate_daily_prices()
 
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
