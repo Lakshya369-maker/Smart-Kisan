@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Kisan</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<svg id="timelineSVG"></svg>
+<div id="progressBar"></div>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">🌱 Smart Kisan</div>
+    <ul class="nav-links">
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#weather-advisory">Weather AI</a></li>
+      <li><a href="#crops">Crops</a></li>
+      <li><a href="#footer">Contact</a></li>
+      <li><a href="#" id="signInNavBtn" class="signin-btn">Sign In</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+<section id="hero" class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1>Grow the Right Crop This Season</h1>
+    <p>AI-powered recommendations based on climate, soil & profitability.</p>
+    <a href="#how" class="cta-btn">Get Started</a>
+  </div>
+</section>
+
+
+<div class="wave"></div>
+
+  <!-- HOW IT WORKS -->
+<section id="how" class="section timeline">
+  <h2 style="font-size:40px">How It Works</h2>
+
+<div class="timeline-container">
+
+  <!-- STEP 1 -->
+<div class="timeline-item left" data-step="1">
+  <div class="timeline-bubble"></div>
+  <div class="timeline-card">
+    <img class="real-tree" src="images/tree1.png" alt="tree">
+    <div class="step-number">1</div>
+    <h3>📅 Select Month & Location</h3>
+    <p>You enter your sowing month and region, Smart Kisan adapts to local climate.</p>
+  </div>
+</div>
+<div class="connector" data-connect="1-2"></div>
+
+  <!-- STEP 2 -->
+<div class="timeline-item right" data-step="2">
+  <div class="timeline-bubble"></div>
+  <div class="timeline-card">
+    <img class="real-tree" src="images/tree.png" alt="tree">
+    <div class="step-number">2</div>
+    <h3>🌦️ AI Weather Understanding</h3>
+    <p>We analyze rainfall, soil moisture, humidity & temperature to avoid crop failure.</p>
+  </div>
+</div>
+<div class="connector" data-connect="2-3"></div>
+
+
+  <!-- STEP 3 -->
+<div class="timeline-item left" data-step="3">
+  <div class="timeline-bubble"></div>
+  <div class="timeline-card">
+    <img class="real-tree" src="images/tree2.png" alt="tree">
+    <div class="step-number">3</div>
+    <h3>🌾 Recommended Crops</h3>
+    <p>Get 3 ranked crops optimized for yield, climate & season.</p>
+  </div>
+</div>
+<div class="connector" data-connect="3-4"></div>
+
+
+  <!-- STEP 4 -->
+<div class="timeline-item right" data-step="4">
+  <div class="timeline-bubble"></div>
+  <div class="timeline-card">
+    <img class="real-tree" src="images/tree3.png" alt="tree">
+    <div class="step-number">4</div>
+    <h3>💰 Profit & Growth</h3>
+    <p>See estimated profit per acre, harvest time & risk factors.</p>
+  </div>
+</div>
+
+</div>
+
+
+</section>
+
+
+
+<section id="weather-advisory" class="section">
+    <h2 style="color:white; font-size:50px">Weather-Based Crop Advisory</h2>
+    <p style="color:white">Answer a few simple questions. Smart Kisan will predict the best crops.</p>
+
+    <div class="weather-slide fade-out">Loading weather…</div>
+
+        <div class="survey-container">
+
+            <div class="survey-progress">
+                <div class="survey-progress-bar"></div>
+            </div>
+
+            <!-- STEP 1: LOCATION -->
+            <div class="survey-card" data-step="1">
+                <h3>📍 Where is your farm located?</h3>
+
+                <label>State</label>
+                <input autocomplete="off" required type="text" id="state" placeholder="e.g. Maharashtra">
+
+                <label>District</label>
+                <input autocomplete="off" required type="text" id="district" placeholder="e.g. Pune">
+
+                <button class="nav-btn next next-btn">→</button>
+            </div>
+
+            <!-- STEP 2: MONTH -->
+            <div class="survey-card" data-step="2">
+                <h3>🌱 When will you sow?</h3>
+
+                <label>Sowing Month</label>
+                <select id="sowingMonth" required>
+                    <option value="">Select month</option>
+                    <option>January</option><option>February</option>
+                    <option>March</option><option>April</option>
+                    <option>May</option><option>June</option>
+                    <option>July</option><option>August</option>
+                    <option>September</option><option>October</option>
+                    <option>November</option><option>December</option>
+                </select>
+
+                <div class="survey-nav">
+                    <button class="nav-btn back back-btn">←</button>
+                    <button class="nav-btn next next-btn">→</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: SOIL DETAILS -->
+            <div class="survey-card" data-step="3">
+                <h3>🌾 Soil Information</h3>
+
+                <label>Soil Type</label>
+                <select id="soilType" required>
+                    <option value="">Select soil</option>
+                    <option value="alluvial">Alluvial</option>
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="sandy">Sandy</option>
+                    <option value="loamy">Loamy</option>
+                    <option value="laterite">Laterite</option>
+                </select>
+
+                <label>Soil pH</label>
+                <input type="number" step="0.1" id="ph" placeholder="e.g. 6.5" required>
+
+                <div class="survey-nav">
+                    <button class="nav-btn back back-btn">←</button>
+                    <button class="nav-btn next next-btn">→</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: NUTRIENTS -->
+            <div class="survey-card" data-step="4">
+                <h3>🔬 Soil Nutrient Levels</h3>
+
+                <label>Nitrogen (N)</label>
+                <input type="number" id="N" placeholder="e.g. 50" required>
+
+                <label>Phosphorus (P)</label>
+                <input type="number" id="P" placeholder="e.g. 40" required>
+
+                <label>Potassium (K)</label>
+                <input type="number" id="K" placeholder="e.g. 45" required>
+
+                <div class="survey-nav">
+                    <button class="nav-btn back back-btn">←</button>
+                    <button class="nav-btn next next-btn">→</button>
+                </div>
+            </div>
+
+            <!-- STEP 5: LAND SIZE -->
+            <div class="survey-card" data-step="5">
+                <h3>🌍 Land Details</h3>
+
+                <label>Land Size (acres)</label>
+                <input required type="number" id="landSize" min="0.1" placeholder="e.g. 2" />
+
+                <div class="survey-nav">
+                    <button class="nav-btn back back-btn">←</button>
+                    <button class="nav-btn next" id="submitSurvey">→</button>
+                </div>
+            </div>
+
+            <!-- STEP 6: LOADING -->
+            <div class="survey-card" data-step="6">
+                <h3>🔍 Uh Oh, Something went wrong…</h3>
+                <p>Please try again!</p>
+                <div class="sad-emoji">😢</div>
+            </div>
+
+        </div>
+
+
+</section>
+
+<section id="crops" class="section crops-section">
+  <h2>Live Market Crops</h2>
+  <p class="crops-subtitle">
+    See real-time mandi prices & key growing conditions for major Indian crops.
+  </p>
+
+  <div class="crop-carousel" id="cropCarousel">
+    <div class="crop-track" id="cropTrack">
+      <!-- Cards will be injected by JavaScript -->
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== SIGN IN MODAL ===== -->
+<div id="signinModal" class="modal-overlay">
+  <form class="modal-box" id="signinForm"  novalidate>
+
+    <button id="closeModal" class="modal-close">×</button>
+
+    <h2>Sign In</h2>
+
+    <label>Email Address</label>
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Enter your email"
+      required
+    >
+
+    <label>Password</label>
+    <input
+      type="password"
+      id="loginPassword"
+      minlength="6"
+      placeholder="Enter password"
+      required
+    >
+
+    <button type="submit" class="login-btn">Login</button>
+
+    <p class="switch-text">
+      New user? <span id="goSignup" class="signup-link">Create Account</span>
+    </p>
+
+  </form>
+</div>
+
+<!-- ===== SIGN UP MODAL ===== -->
+<div id="signupModal" class="modal-overlay">
+  <form class="modal-box" id="signupForm" novalidate>
+
+    <button id="closeSignup" class="modal-close">×</button>
+
+    <h2>Create Account</h2>
+
+    <label>Full Name</label>
+    <input
+      type="text"
+      id="signupName"
+      placeholder="Enter your name"
+      required
+    >
+
+    <label>Email Address</label>
+    <input
+      type="email"
+      id="signupEmail"
+      placeholder="Enter your email"
+      required
+    >
+
+    <label>Password</label>
+    <input
+      type="password"
+      id="signupPassword"
+      minlength="6"
+      placeholder="Create password"
+      required
+    >
+
+    <button type="submit" class="login-btn">Sign Up</button>
+
+    <p class="modal-foot">
+      Already have an account?
+      <span id="swapToSignin" class="signup-link">Sign In</span>
+    </p>
+
+  </form>
+</div>
+
+<!-- ===== OTP MODAL (email verification) ===== -->
+<div id="otpModal" class="modal-overlay">
+  <form class="modal-box" id="otpForm" novalidate>
+
+    <button id="closeOtpModal" class="modal-close">×</button>
+    <h2>Email Verification</h2>
+    <p style="font-size:14px;text-align:center;color:#444">
+      We’ve sent a 6-digit code to your email.
+    </p>
+
+    <label>Enter OTP</label>
+    <div class="otp-inputs" id="otpInputs">
+  <input type="text" maxlength="1">
+  <input type="text" maxlength="1">
+  <input type="text" maxlength="1">
+  <input type="text" maxlength="1">
+  <input type="text" maxlength="1">
+  <input type="text" maxlength="1">
+</div>
+
+    <div id="resendWrap" style="text-align:center;margin-top:10px;">
+  <span id="timerText" style="color:#555;font-size:14px;">Resend in 30s</span>
+  <button id="resendBtn" type="button" style="display:none;border:none;background:none;color:#2e7d32;font-weight:600;cursor:pointer;">
+    Resend OTP
+  </button>
+</div>
+
+
+
+    <button id="verifyBtn" type="submit" class="login-btn" disabled>
+  Verify & Create Account
+</button>
+
+  </form>
+</div>
+
+
+<footer class="footer" id="footer">
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <h3>🌱 Smart Kisan</h3>
+      <p>Smart agriculture insights, weather, and crop advisory.</p>
+    </div>
+
+    <div class="footer-links">
+      <h4>Quick Links</h4>
+      <a href="#hero">Home</a>
+      <a href="#how">How It Works</a>
+      <a href="#weather-advisory">Crop Advisory</a>
+      <a href="#crops">Market Crops</a>
+      <a href="#footer">Contact</a>
+    </div>
+
+    <div class="footer-contact">
+      <h4>Contact</h4>
+      <p>📩 lakshya.arora.900@gmail.com</p>
+      <p>📍 India</p>
+    </div>
+
+  </div>
+
+  <div class="footer-credit">
+    © 2025 Smart Kisan — All rights reserved.
+  </div>
+</footer>
+
+  <button id="backToTop">↑</button>
+<div id="customPopup" class="custom-popup">
+  <span id="popupMessage"></span>
+</div>
+
+<!-- ================= AI CHATBOT ================= -->
+<div id="aiBot">
+  <div id="aiHeader">🌱 Smart Kisan AI</div>
+
+  <div id="aiMessages"></div>
+
+  <div id="aiInputArea">
+    <input type="text" id="aiInput" placeholder="Ask about crops, weather, profit..." />
+    <button id="aiSend">➤</button>
+  </div>
+</div>
+
+<div id="aiToggle" class="ai-plant-btn">
+  <div class="ai-ring"></div>
+  <img src="images/Bot.png" class="ai-plant-icon">
+</div>
+
+
+<div id="globalPlantLoader">
+  <div class="multi-ring-loader">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
