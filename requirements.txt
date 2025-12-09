@@ -1,10 +1,10 @@
 flask
 flask-cors
-gunicorn
 numpy
 pandas
-scikit-learn
 tensorflow
-joblib
+scikit-learn
 requests
 python-dotenv
+gunicorn
+bcrypt
