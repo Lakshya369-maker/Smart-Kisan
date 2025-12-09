@@ -27,6 +27,36 @@ const otpForm = document.getElementById("otpForm");
 
 const BACKEND_URL = "https://smart-kisan-jznw.onrender.com";
 
+
+
+async function fetchWithRenderWake(url, options = {}, delayMs = 1500) {
+  let wakeTimer;
+  let popupShown = false;
+
+  try {
+    const wakePromise = new Promise(resolve => {
+      wakeTimer = setTimeout(() => {
+        showRenderWakeupCountdown();   // ✅ SHOW POPUP
+        popupShown = true;
+        resolve();
+      }, delayMs);
+    });
+
+    const fetchPromise = fetch(url, options);
+
+    const res = await Promise.race([
+      fetchPromise,
+      wakePromise.then(() => fetchPromise)
+    ]);
+
+    return res;
+  } finally {
+    clearTimeout(wakeTimer);
+    if (popupShown) stopRenderWakeupCountdown(); // ✅ AUTO HIDE
+  }
+}
+
+
 // ===============================
 // OTP MODAL SYSTEM
 // ===============================
@@ -104,10 +134,13 @@ function showRenderWakeupCountdown() {
   msg.textContent = `⚠️ Our AI server is waking up... Please wait ${renderRemainingSeconds}s`;
 
   // ✅ AUTO CLOSE AFTER 3 SECONDS (LIKE NORMAL POPUPS)
-  clearTimeout(renderAutoCloseTimer);
-  renderAutoCloseTimer = setTimeout(() => {
+  // ✅ SAFETY AUTO-CLOSE (only if fetch somehow fails)
+clearTimeout(renderAutoCloseTimer);
+renderAutoCloseTimer = setTimeout(() => {
+  if (renderPopupVisible) {
     stopRenderWakeupCountdown();
-  }, 3000);
+  }
+}, 10000); // failsafe after 10s
 }
 
 
@@ -185,16 +218,18 @@ if (signupForm) {
     }
 
     // Send to backend first (BEFORE opening OTP modal)
-    showRenderWakeupCountdown();
 
-    const res = await fetch(BACKEND_URL + "/auth/send-otp", {
+    const res = await fetchWithRenderWake(
+    BACKEND_URL + "/auth/send-otp",
+    {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
-    });
+    }
+  );
+
 
     const data = await res.json();
-    stopRenderWakeupCountdown();
 
     // EMAIL EXISTS → redirect to login
     if (data.status === "exists") {
@@ -287,15 +322,17 @@ if (otpForm) {
     const { name, email, password } = window.signupInfo;
 
     try {
-      showRenderWakeupCountdown();
-      const res = await fetch(BACKEND_URL + "/auth/verify", {
+      const res = await fetchWithRenderWake(
+      BACKEND_URL + "/auth/verify",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, otp })
-      });
+      }
+    );
+
 
       const data = await res.json();
-      stopRenderWakeupCountdown();
 
       if (data.status === "registered") {
         localStorage.setItem("AUTH_USER", JSON.stringify({ name, email }));
@@ -377,8 +414,7 @@ if (resendBtn) {
     timerText.textContent = "Sending...";
 
     try {
-      showRenderWakeupCountdown();
-      const res = await fetch(BACKEND_URL + "/auth/send-otp", {
+      const res = await fetchWithRenderWake(BACKEND_URL + "/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: window.signupInfo.email })
@@ -387,14 +423,11 @@ if (resendBtn) {
       if (res.ok) {
         timerText.textContent = "OTP sent! Check your email.";
         startOtpTimer();
-        stopRenderWakeupCountdown();
       } else {
         timerText.textContent = "Failed to send. Try again.";
         resendBtn.style.display = "inline-block";
-        stopRenderWakeupCountdown();
       }
     } catch (error) {
-      stopRenderWakeupCountdown();   // ✅ IMPORTANT FIX
       console.error("Resend error:", error);
       timerText.textContent = "Network error. Try again.";
       resendBtn.style.display = "inline-block";
@@ -1104,15 +1137,17 @@ if (signinForm) {
 
     // Proceed with backend login only after validation
     try {
-      showRenderWakeupCountdown();
-      const res = await fetch(BACKEND_URL + "/auth/login", {
+      const res = await fetchWithRenderWake(
+      BACKEND_URL + "/auth/login",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
-      });
+      }
+    );
+
 
       const data = await res.json();
-      stopRenderWakeupCountdown();
 
       if (data.status === "ok") {
         localStorage.setItem("AUTH_USER", JSON.stringify(data.user));
@@ -1675,16 +1710,19 @@ document.addEventListener("click", function (e) {
 // ===============================
 
 function showPlantLoader() {
+  const renderPopup = document.getElementById("renderPopup");
+  if (renderPopup && renderPopup.classList.contains("show")) return;
+
   const loader = document.getElementById("globalPlantLoader");
   if (!loader) return;
 
   loader.classList.add("show");
 
-  // ✅ FORCE loader to stay for EXACTLY 5 seconds
   setTimeout(() => {
     loader.classList.remove("show");
   }, 5000);
 }
+
 function hidePlantLoader() {
   const loader = document.getElementById("globalPlantLoader");
   if (!loader) return;
@@ -1753,14 +1791,13 @@ if (!allowed.includes(sowingMonth)) {
   return;
 }
 
-showRenderWakeupCountdown();
-fetch(BACKEND_URL + "/predict-crop", {
+fetchWithRenderWake(BACKEND_URL + "/predict-crop", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)
 })
+
 .then(async res => {
-  stopRenderWakeupCountdown();
   const data = await res.json();
 
   console.log("✅ RAW RESPONSE FROM SERVER:", data);
@@ -1784,7 +1821,6 @@ fetch(BACKEND_URL + "/predict-crop", {
   }
 })
 .catch(err => {
-  stopRenderWakeupCountdown();
   console.error("❌ FETCH FAILED:", err);
   hidePlantLoader();
   showPopup("❌ Server not responding", "error");
