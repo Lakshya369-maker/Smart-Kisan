@@ -1644,3 +1644,54 @@ body.modal-lock #signinModal {
 #renderPopup {
   z-index: 99999;   /* ✅ always ABOVE everything */
 }
+
+/* ===============================
+   PREMIUM CURVED MARKET TREND
+================================ */
+
+.trend-svg {
+  width: 26px;
+  height: 14px;
+}
+
+.trend-svg path {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ✅ HIGH PROFIT → SMOOTH RISING CURVE */
+.trend-svg.up path {
+  stroke: #2e7d32;
+}
+
+/* ✅ LOW PROFIT → SMOOTH FALLING CURVE */
+.trend-svg.down path {
+  stroke: #c62828;
+}
+
+/* ✅ MEDIUM → SOFT FLAT CURVE */
+.trend-svg.stable path {
+  stroke: #f9a825;
+}
+
+/* ✅ Optional subtle motion (very classy) */
+.trend-svg {
+  animation: trendFloat 2.8s ease-in-out infinite;
+}
+
+@keyframes trendFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+body.no-scroll {
+  overflow: hidden;
+  height: 100vh;
+  touch-action: none;
+}
+.crop-card img {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}

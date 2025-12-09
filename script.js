@@ -1033,11 +1033,29 @@ function generateMockPrices(key) {
 
   return prices;
 }
-function getTrendSymbol(type) {
-  if (type === "up") return "📈";
-  if (type === "down") return "📉";
-  return "➖";
+function getTrendLine(type) {
+  if (type === "up") {
+    return `
+      <svg class="trend-svg up" viewBox="0 0 40 20">
+        <path d="M2 16 Q20 2 38 4"/>
+      </svg>
+    `;
+  }
+  if (type === "down") {
+    return `
+      <svg class="trend-svg down" viewBox="0 0 40 20">
+        <path d="M2 4 Q20 18 38 16"/>
+      </svg>
+    `;
+  }
+  return `
+    <svg class="trend-svg stable" viewBox="0 0 40 20">
+      <path d="M2 10 Q20 10 38 10"/>
+    </svg>
+  `;
 }
+
+
 
 window.addEventListener("load", () => {
   const carousel = document.getElementById("cropCarousel");
@@ -1069,6 +1087,7 @@ window.addEventListener("load", () => {
         <p><strong>Temp:</strong> ${crop.temp}</p>
         <p><strong>Rainfall:</strong> ${crop.rain}</p>
         <p><strong>Soil:</strong> ${crop.soil}</p>
+
         <span class="profit-tag" style="display:flex;align-items:center;gap:8px;">
         <!-- ✅ COLOR DOT -->
         <span style="
@@ -1083,9 +1102,7 @@ window.addEventListener("load", () => {
         Profit: ${profitData.label}
 
         <!-- ✅ TREND SYMBOL -->
-        <span style="font-size:15px;">
-          ${getTrendSymbol(profitData.trend)}
-        </span>
+        ${getTrendLine(profitData.trend)}
 
       </span>
 
@@ -1761,18 +1778,27 @@ function showPlantLoader() {
   const loader = document.getElementById("globalPlantLoader");
   if (!loader) return;
 
+  // ✅ LOCK SCROLL
+  document.body.classList.add("no-scroll");
+
   loader.classList.add("show");
 
+  // ✅ SAFETY AUTO-HIDE (10s)
   setTimeout(() => {
-    loader.classList.remove("show");
+    hidePlantLoader();
   }, 10000);
 }
 
 function hidePlantLoader() {
   const loader = document.getElementById("globalPlantLoader");
   if (!loader) return;
+
   loader.classList.remove("show");
+
+  // ✅ UNLOCK SCROLL
+  document.body.classList.remove("no-scroll");
 }
+
 
 function sendSurveyToModel() {
   showPlantLoader();
