@@ -982,16 +982,16 @@ window.addEventListener("DOMContentLoaded", () => {
 // CROPS CAROUSEL
 // ===============================
 const cropsData = [
-  { name: "Wheat", key: "wheat", img: "images/wheat.jpg", duration: "110–130 days", temp: "10–25°C", rain: "300–900 mm", soil: "Loamy / Clayey", profit: "High" },
-  { name: "Rice (Paddy)", key: "paddy", img: "images/rice.jpg", duration: "120–150 days", temp: "20–35°C", rain: "1000–1500 mm", soil: "Clay / Silty", profit: "High" },
-  { name: "Maize", key: "maize", img: "images/maize.jpg", duration: "90–110 days", temp: "18–27°C", rain: "500–800 mm", soil: "Well-drained loamy", profit: "Medium" },
-  { name: "Soybean", key: "soybean", img: "images/soybean.jpg", duration: "90–110 days", temp: "18–30°C", rain: "600–1000 mm", soil: "Black / Loamy", profit: "High" },
-  { name: "Cotton", key: "cotton", img: "images/cotton.jpg", duration: "150–180 days", temp: "20–35°C", rain: "600–800 mm", soil: "Black soil", profit: "High" },
-  { name: "Groundnut", key: "groundnut", img: "images/groundnut.jpg", duration: "100–120 days", temp: "21–27°C", rain: "500–1000 mm", soil: "Sandy loam", profit: "Medium" },
-  { name: "Mustard", key: "mustard", img: "images/mustard.jpg", duration: "90–110 days", temp: "10–25°C", rain: "400–500 mm", soil: "Loam / Clay loam", profit: "Medium" },
-  { name: "Potato", key: "potato", img: "images/potato.jpg", duration: "90–120 days", temp: "15–25°C", rain: "500–700 mm", soil: "Well-drained loam", profit: "High" },
-  { name: "Sugarcane", key: "sugarcane", img: "images/sugarcane.jpg", duration: "10–18 months", temp: "20–35°C", rain: "1200–1500 mm", soil: "Deep rich loam", profit: "High" },
-  { name: "Chana", key: "chana", img: "images/chana.jpg", duration: "100–120 days", temp: "10–30°C", rain: "400–600 mm", soil: "Well-drained loam", profit: "Medium" }
+  { name: "Wheat", key: "wheat", img: "images/wheat.jpg", duration: "110–130 days", temp: "10–25°C", rain: "300–900 mm", soil: "Loamy / Clayey"},
+  { name: "Rice (Paddy)", key: "paddy", img: "images/rice.jpg", duration: "120–150 days", temp: "20–35°C", rain: "1000–1500 mm", soil: "Clay / Silty"},
+  { name: "Maize", key: "maize", img: "images/maize.jpg", duration: "90–110 days", temp: "18–27°C", rain: "500–800 mm", soil: "Well-drained loamy"},
+  { name: "Soybean", key: "soybean", img: "images/soybean.jpg", duration: "90–110 days", temp: "18–30°C", rain: "600–1000 mm", soil: "Black / Loamy"},
+  { name: "Cotton", key: "cotton", img: "images/cotton.jpg", duration: "150–180 days", temp: "20–35°C", rain: "600–800 mm", soil: "Black soil"},
+  { name: "Groundnut", key: "groundnut", img: "images/groundnut.jpg", duration: "100–120 days", temp: "21–27°C", rain: "500–1000 mm", soil: "Sandy loam"},
+  { name: "Mustard", key: "mustard", img: "images/mustard.jpg", duration: "90–110 days", temp: "10–25°C", rain: "400–500 mm", soil: "Loam / Clay loam"},
+  { name: "Potato", key: "potato", img: "images/potato.jpg", duration: "90–120 days", temp: "15–25°C", rain: "500–700 mm", soil: "Well-drained loam"},
+  { name: "Sugarcane", key: "sugarcane", img: "images/sugarcane.jpg", duration: "10–18 months", temp: "20–35°C", rain: "1200–1500 mm", soil: "Deep rich loam"},
+  { name: "Chana", key: "chana", img: "images/chana.jpg", duration: "100–120 days", temp: "10–30°C", rain: "400–600 mm", soil: "Well-drained loam"}
 ];
 
 const mandiCities = [
@@ -999,18 +999,44 @@ const mandiCities = [
   "Ahmedabad", "Kolkata", "Hyderabad", "Indore", "Bengaluru"
 ];
 
+function calculateProfitTag(price) {
+  if (price >= 5500) {
+    return { label: "High", color: "green", trend: "up" };
+  }
+  if (price >= 3500) {
+    return { label: "Medium", color: "orange", trend: "stable" };
+  }
+  return { label: "Low", color: "red", trend: "down" };
+}
+
 function generateMockPrices(key) {
   const baseMap = {
     wheat: 2400, paddy: 2300, maize: 2100,
     soybean: 4200, cotton: 6500, groundnut: 5200,
     mustard: 5400, potato: 1400, sugarcane: 320, chana: 5200,
   };
+
   const base = baseMap[key] || 3000;
 
-  return mandiCities.map(city => {
+  const prices = mandiCities.map(city => {
     const jitter = (Math.random() * 0.16 - 0.08) * base;
-    return { city, price: Math.round(base + jitter) };
+    const finalPrice = Math.round(base + jitter);
+
+    const profitData = calculateProfitTag(finalPrice);
+
+    return { 
+      city, 
+      price: finalPrice,
+      profit: profitData
+    };
   });
+
+  return prices;
+}
+function getTrendSymbol(type) {
+  if (type === "up") return "📈";
+  if (type === "down") return "📉";
+  return "➖";
 }
 
 window.addEventListener("load", () => {
@@ -1019,8 +1045,16 @@ window.addEventListener("load", () => {
   if (!carousel || !track) return;
 
   cropsData.forEach(crop => {
-    const prices = generateMockPrices(crop.key);
-    const ticker = prices.map(p => `${p.city}: ₹${p.price}/qtl`).join(" | ");
+  const prices = generateMockPrices(crop.key);
+
+  const avgPrice = Math.round(
+    prices.reduce((sum, p) => sum + p.price, 0) / prices.length
+  );
+
+  const profitData = calculateProfitTag(avgPrice);
+
+  const ticker = prices.map(p => `${p.city}: ₹${p.price}/qtl`).join(" | ");
+
 
     const card = document.createElement("div");
     card.className = "crop-card";
@@ -1035,7 +1069,26 @@ window.addEventListener("load", () => {
         <p><strong>Temp:</strong> ${crop.temp}</p>
         <p><strong>Rainfall:</strong> ${crop.rain}</p>
         <p><strong>Soil:</strong> ${crop.soil}</p>
-        <span class="profit-tag">Profit: ${crop.profit}</span>
+        <span class="profit-tag" style="display:flex;align-items:center;gap:8px;">
+        <!-- ✅ COLOR DOT -->
+        <span style="
+          width:8px;
+          height:8px;
+          border-radius:50%;
+          background:${profitData.color};
+          display:inline-block;
+        "></span>
+
+        <!-- ✅ PROFIT LABEL -->
+        Profit: ${profitData.label}
+
+        <!-- ✅ TREND SYMBOL -->
+        <span style="font-size:15px;">
+          ${getTrendSymbol(profitData.trend)}
+        </span>
+
+      </span>
+
       </div>
     `;
     track.appendChild(card);
@@ -1712,7 +1765,7 @@ function showPlantLoader() {
 
   setTimeout(() => {
     loader.classList.remove("show");
-  }, 5000);
+  }, 10000);
 }
 
 function hidePlantLoader() {
