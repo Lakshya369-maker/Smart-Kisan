@@ -1,3 +1,4 @@
+# SMART - KISAN
 In an era where farming decisions are increasingly affected by climate uncertainty and market volatility, Smart Kisan stands as a digital companion for modern farmers.
 It’s an AI-driven web platform designed to analyze soil health, climate conditions, and market trends in real time — helping farmers choose the most profitable and climate-suitable crops with confidence.
 
